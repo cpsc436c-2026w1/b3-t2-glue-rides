@@ -104,7 +104,8 @@ because you compare them in Step 4.
 <details>
 <summary>Check your predictions</summary>
 
-Divided by the 31 days of March, the file count is close to 32 files per day. The job built a rides table that
+Divided by the 31 days of March, the file count is close to the 32 tasks of `repartition(32)`, one file from each
+task for each day. The job built a rides table that
 includes pickup borough, which it joined from the zone lookup.
 
 The week report's Data scanned matches `fare_and_borough_mb` and is well below `three_columns_mb`. Athena did not read
