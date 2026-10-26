@@ -271,6 +271,53 @@ twice leaves the same rows, though it still records a new snapshot. If two incom
 `MERGE` would fail rather than guess which one wins (L11).
 </details>
 
+**🔬 Explore on your own: rerun the job on Glue 6.0.** This one is optional, and you don't have to run it. Glue 6.0,
+released in August 2026, prices a standard job run at $0.308 per DPU-hour in ca-central-1, against $0.44 for Glue
+5.0 ([Glue pricing](https://aws.amazon.com/glue/pricing/),
+[what changed in Glue 6.0](https://docs.aws.amazon.com/glue/latest/dg/migrating-version-60.html)). To try it, run
+these steps in order, after Step 6.
+
+1. In CloudShell, make a Glue 6.0 copy of the job, `rides-month-g6`. The original `rides-month` stays as it is.
+
+   ```
+   curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/b3-t2-glue-rides/main/rerun_glue6.sh && bash rerun_glue6.sh
+   ```
+
+2. Clean up for the rerun. Wait until no run of `rides-month` is still going, then run this in Athena. The new job
+   creates the table again.
+
+   ```sql
+   DROP TABLE tutorial.rides_month;
+   ```
+
+3. In CloudShell, start the copy once, and watch it on its own **Runs** tab (**Glue**, **ETL jobs**,
+   `rides-month-g6`).
+
+   ```
+   aws glue start-job-run --job-name rides-month-g6
+   ```
+
+4. When it shows **Succeeded**, read its run time and DPU-seconds.
+
+   ```
+   aws glue get-job-runs --job-name rides-month-g6 --max-items 1 --query 'JobRuns[0].[ExecutionTime,DPUSeconds]'
+   ```
+
+Then answer two questions. What happened to the run time, compared with your run in Step 6? How would your price
+estimate change if the job loaded 100 times as much data each night?
+
+<details>
+<summary>One answer</summary>
+
+In our runs, Glue 6.0 took 128 to 129 s and 257 to 258 DPU-seconds, so one run cost about 258 / 3600 × 0.308 = $0.022, against about
+$0.037 on Glue 5.0. One run is too few to say Glue 6.0 is faster. Run times vary by tens of seconds, and the saving
+comes from the price per DPU-hour. At 100 times the data, if the work grows in proportion, one run takes about 100
+times the DPU-seconds. That is about $2.20 a run on Glue 6.0 against about $3.70 on Glue 5.0, or about $800 against
+$1,350 for a year of nightly runs. The 1-minute minimum no longer matters at that size, so the 30% lower rate is
+the whole difference. A load that size would also get more workers, which shortens the run but costs about the same
+DPU-seconds.
+</details>
+
 ## 5. Clean up
 
 Run the four statements of [`sql/99_clean_up.sql`](sql/99_clean_up.sql) in Athena, one at a time. The three
@@ -283,6 +330,7 @@ Then delete the job with this command in CloudShell:
 
 ```
 aws glue delete-job --job-name rides-month
+aws glue delete-job --job-name rides-month-g6   # only if you did the Glue 6.0 exercise
 ```
 
 It prints `{"JobName": "rides-month"}`. Then check what is left of the tutorial in your bucket with this command in
@@ -329,6 +377,7 @@ policy stay, because A3 uses them. The job script left in your bucket adds a sma
 | File | What it is |
 |---|---|
 | [`check_t2.sh`](check_t2.sh) | This script checks your account for the earlier setups and this tutorial's setup, changes nothing, and says what to run for anything missing. |
+| [`rerun_glue6.sh`](rerun_glue6.sh) | For the optional Glue 6.0 exercise. This script makes a Glue 6.0 copy of the job, `rides-month-g6`, with the same script, role, workers and arguments. |
 | [`setup_t2.sh`](setup_t2.sh) | This script performs the one-time setup. It grants the Glue role read access to the course lake, copies the job script to your bucket, and creates `rides-month`. |
 | [`load_rides_month.py`](load_rides_month.py) | This Glue job reads one month of rides and the zone lookup, then writes `tutorial.rides_month`. |
 | [`sql/`](sql/) | This directory contains the SQL for each step, with the prediction prompts in the comments. |
