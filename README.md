@@ -15,12 +15,12 @@ All course tutorials are listed on the [Tutorials page](https://cpsc436c-2026w1.
 
 ## 1. Before you start
 
-You need two earlier setups, both in Region **Canada (Central)**:
-
-- The setup in section 1 of [Tutorial 1](https://github.com/cpsc436c-2026w1/b3-t1-athena-rides). It created the Athena
-  result location, the Data scanned limit and the `course` data source.
-- The setup script `setup_glue.sh` from [L7](https://github.com/cpsc436c-2026w1/l7-spark-glue). It created your bucket
-  `436c-glue-<your account number>` and the Glue role `436c-glue-notebook`.
+We will reuse the setup from the [Glue tutorial](https://github.com/cpsc436c-2026w1/l7-spark-glue) and the
+[Athena tutorial](https://github.com/cpsc436c-2026w1/b3-t1-athena-rides). You probably **won't** need to rerun them.
+The check script below will tell you if you do. As a reminder, the Glue tutorial's setup script `setup_glue.sh`
+created your bucket `436c-glue-<your account number>` and the Glue role `436c-glue-notebook`. The Athena tutorial's
+setup set the Athena result location, the Data scanned limit and the `course` data source. Both work in Region
+**Canada (Central)**.
 
 To check both, and later this tutorial's own setup, open **CloudShell** with the `>_` icon in the top bar and paste
 this line. It only reads your account. Each line says ✔ or ✗, and each ✗ is followed by the command that fixes it.
