@@ -13,7 +13,7 @@ SHOW TBLPROPERTIES tutorial.rides_month;
 -- This property is stored in the table's metadata file. The default is five days, and 60 seconds is only for this tutorial.
 
 -- Before you run it, decide which older snapshots can expire once they are more than 60 seconds old.
--- Will the S3 file count drop, or can a snapshot that is kept still need the old files?
+-- Will the S3 file count drop, stay the same, or rise?
 VACUUM tutorial.rides_month;
 
 SELECT snapshot_id, operation FROM tutorial."rides_month$snapshots";

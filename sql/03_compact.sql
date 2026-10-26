@@ -1,7 +1,7 @@
 -- In Step 4, compact the table.
 
--- Before you run it, predict whether the number of current data files will stay near 992, fall to roughly the
--- number of days, or increase. Will the row count stay equal to the count after the DELETE?
+-- Before you run it, predict whether the number of current data files will stay near 992, fall to a few
+-- dozen, or increase. Will the row count stay equal to the count after the DELETE?
 OPTIMIZE tutorial.rides_month REWRITE DATA USING BIN_PACK;
 -- BIN_PACK combines small files into larger ones, up to a target size. This is compaction (L10).
 

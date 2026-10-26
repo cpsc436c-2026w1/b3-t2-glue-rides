@@ -42,8 +42,9 @@ job     rides-month created
 Start it:  aws glue start-job-run --job-name rides-month
 ```
 
-You can safely rerun it, and a rerun resets the job `rides-month` to its original settings. If it stops with a line starting `STOP:`, run the setup it names first. If it fails another
-way, send the error and your account number to your TA.
+You can safely rerun it, and a rerun resets the job `rides-month` to its original settings. If it stops with a line
+starting `STOP:`, do what that line says. It either names a setup to run first, or asks you to send the error and
+your account number to your TA.
 
 ## 3. Steps
 
@@ -85,7 +86,7 @@ run should reach **Succeeded** after about 2.5 minutes. During the run, open
 
 [`sql/01_check_the_table.sql`](sql/01_check_the_table.sql)
 
-The file first counts the table's files and rows. Then `DESCRIBE` gives each column's field id, and a query on
+Run its statements in the Athena query editor, one at a time. The file first counts the table's files and rows. Then `DESCRIBE` gives each column's field id, and a query on
 `"rides_month$files"` adds up `column_sizes` for the week's files. Use those sizes to predict the week report's Data
 scanned before you run it.
 
@@ -128,6 +129,9 @@ deleted rides. Step 5 removes the obsolete data and delete files from S3 once no
 
 [`sql/03_compact.sql`](sql/03_compact.sql)
 
+Run it in the Athena query editor. Then run the week report from Step 2 again and compare its Data scanned with
+what you noted then.
+
 <details>
 <summary>Check your predictions</summary>
 
@@ -140,8 +144,9 @@ opens 31 files and reads their footers instead of 992. S3 held 1,587 files after
 
 ### Step 5: remove the old files for good
 
-Run [`sql/04_expire_old_snapshots.sql`](sql/04_expire_old_snapshots.sql). Use the CloudShell S3-count command from
-Step 3 immediately before `VACUUM` and again after the final `VACUUM`.
+Run [`sql/04_expire_old_snapshots.sql`](sql/04_expire_old_snapshots.sql) in the Athena query editor, one statement at
+a time and in order. Count the files in S3 with the CloudShell command from Step 3 before you start, and again after
+the final `VACUUM`.
 
 <details>
 <summary>Check your predictions</summary>
@@ -200,6 +205,8 @@ CloudShell:
 aws glue start-job-run --job-name rides-month --arguments '{"--MONTH":"2024-04"}'
 ```
 
+Wait until the run shows **Succeeded**, about 2.5 minutes, before you run the SQL.
+
 <details>
 <summary>Check your predictions</summary>
 
@@ -226,7 +233,9 @@ twice leaves the same rows, though it still records a new snapshot. If two incom
 
 Run the four statements of [`sql/99_clean_up.sql`](sql/99_clean_up.sql) in Athena, one at a time. The three
 `DROP TABLE` statements and `DROP DATABASE` should all succeed. Refresh the `AwsDataCatalog` list, and the `tutorial`
-database should be gone. For an Iceberg table, `DROP TABLE` also deletes its data files.
+database should be gone. For an Iceberg table, `DROP TABLE` also deletes its data files. If `DROP DATABASE` fails
+because the database is not empty, tutorial 1's tables are still in it. Run tutorial 1's clean-up, then run
+`DROP DATABASE` again.
 
 Then delete the job with this command in CloudShell:
 
