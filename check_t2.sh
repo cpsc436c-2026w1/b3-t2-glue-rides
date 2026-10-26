@@ -30,7 +30,7 @@ case "$LIMIT" in ""|None) bad "no Data scanned limit on the workgroup primary" "
   *) ok "Data scanned limit $((LIMIT / 1000000000)) GB a query";; esac
 
 aws iam get-role-policy --role-name 436c-glue-notebook --policy-name course-lake-read >/dev/null 2>&1 \
-  && ok "Glue role can read the course lake (setup_t2.sh)" || bad "the Glue role cannot read the course lake yet" "$T2"
+  && ok "Glue role can read the course lakehouse (setup_t2.sh)" || bad "the Glue role cannot read the course lakehouse yet" "$T2"
 aws s3api head-object --bucket "436c-glue-$ACCOUNT" --key tutorial2/load_rides_month.py >/dev/null 2>&1 \
   && ok "job script in your bucket (setup_t2.sh)" || bad "the job script is not in your bucket" "$T2"
 if aws glue get-job --job-name rides-month >/dev/null 2>&1; then

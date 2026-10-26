@@ -8,8 +8,14 @@ table in Athena. Here you try the other two kinds of work A3 asks for, on the sa
 - **Maintain.** The table starts with many small files. You delete some rows, compact the table with `OPTIMIZE`,
   expire old snapshots with `VACUUM`, and count the files in S3 after each step.
 
-A3 asks for the same moves on the grocer data, with less given to you. The main path costs about 4 cents, almost all of it for
-one Glue run, and Athena adds under a cent. The extra exercises add about 3 cents, almost all of it for the April run.
+You build your own small lakehouse. The course lakehouse stays read-only in the course account. A Glue job copies one month of
+rides from it into an Iceberg table you own, in your own bucket. You then query and change that table in Athena, and
+look at its files in S3. In [A3](https://ilm.wiki/436c/a3) you will do a similar connected lakehouse setup for
+groceries data.
+
+<!-- FIGURE: diagrams/t2-lake.svg goes here -->
+
+The main path costs about 4 cents, almost all of it for one Glue run, and Athena adds under a cent. The extra exercises add about 3 cents, almost all of it for the April run.
 
 All course tutorials are listed on the [Tutorials page](https://cpsc436c-2026w1.github.io/lecture-reviews/tutorials.html).
 
@@ -22,7 +28,7 @@ To check both, and later this tutorial's own setup, open **CloudShell** with the
 this line. 
 
 Each line says ✔ or ✗. For each ✗ it will show you how to fix it.
-**Before you do the next step (2), the last three checks show ✗ (the Glue role's access to the course lake, the job script and
+**Before you do the next step (2), the last three checks show ✗ (the Glue role's access to the course lakehouse, the job script and
 the job `rides-month`), this is okay. We will create them in a second**.
 
 ```
@@ -71,7 +77,7 @@ above did both steps for you:
    `s3://436c-glue-<your account number>/tutorial2/load_rides_month.py`.
 3. `setup_t2.sh` then created the job `rides-month`. The job points at that S3 file and runs it as your Glue role
    `436c-glue-notebook`, on Glue 5.0 with two G.1X workers. Its default arguments set the month
-   (`--MONTH 2024-03`) and the database (`--DATABASE tutorial`). The script also lets the role read the course lake,
+   (`--MONTH 2024-03`) and the database (`--DATABASE tutorial`). The script also lets the role read the course lakehouse,
    which the job reads its rides from.
 
 This is the usual pathway for any Glue job: write the script, put it in S3, then create a job that names the script,
@@ -391,6 +397,6 @@ policy stay, because A3 uses them. The job script left in your bucket adds a sma
 |---|---|
 | [`check_t2.sh`](check_t2.sh) | This script checks your account for the earlier setups and this tutorial's setup, changes nothing, and says what to run for anything missing. |
 | [`rerun_glue6.sh`](rerun_glue6.sh) | For the optional Glue 6.0 exercise. This script makes a Glue 6.0 copy of the job, `rides-month-g6`, with the same script, role, workers and arguments. |
-| [`setup_t2.sh`](setup_t2.sh) | This script performs the one-time setup. It grants the Glue role read access to the course lake, copies the job script to your bucket, and creates `rides-month`. |
+| [`setup_t2.sh`](setup_t2.sh) | This script performs the one-time setup. It grants the Glue role read access to the course lakehouse, copies the job script to your bucket, and creates `rides-month`. |
 | [`load_rides_month.py`](load_rides_month.py) | This Glue job reads one month of rides and the zone lookup, then writes `tutorial.rides_month`. |
 | [`sql/`](sql/) | This directory contains the SQL for each step, with the prediction prompts in the comments. |

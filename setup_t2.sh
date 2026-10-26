@@ -1,7 +1,7 @@
 #!/bin/bash
 # B3T2 setup: run in CloudShell (Region ca-central-1) after L7's setup_glue.sh (github.com/cpsc436c-2026w1/l7-spark-glue).
 #   bash setup_t2.sh
-# 1. lets your Glue role 436c-glue-notebook read the course lake (rides), 2. copies the job script to your bucket,
+# 1. lets your Glue role 436c-glue-notebook read the course lakehouse (rides), 2. copies the job script to your bucket,
 # 3. creates the Glue job rides-month (Glue 5.0, 2 G.1X workers). Running it again is safe.
 set -euo pipefail
 export AWS_DEFAULT_REGION=ca-central-1
@@ -23,7 +23,7 @@ aws iam put-role-policy --role-name "$ROLE" --policy-name course-lake-read --pol
     {"Effect": "Allow", "Action": "s3:GetObject", "Resource": "arn:aws:s3:::436c-l6-bench-940482406111/lake/*"},
     {"Effect": "Allow", "Action": "s3:ListBucket", "Resource": "arn:aws:s3:::436c-l6-bench-940482406111",
      "Condition": {"StringLike": {"s3:prefix": "lake/*"}}}]}'
-echo "role    $ROLE can read the course lake"
+echo "role    $ROLE can read the course lakehouse"
 fi
 
 aws s3 cp "$SCRIPT_SRC" "s3://$BUCKET/tutorial2/load_rides_month.py" --only-show-errors
