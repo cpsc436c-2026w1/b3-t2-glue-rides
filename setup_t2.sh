@@ -9,12 +9,12 @@ ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 # If any command below fails, print a STOP line naming it before the script exits.
 trap 'echo "STOP: a setup step failed: $BASH_COMMAND (the AWS error is above). Send your account number ($ACCOUNT) and that error to your TA."' ERR
 ROLE=436c-glue-notebook
-BUCKET=${BUCKET:-436c-glue-$ACCOUNT}
+BUCKET=436c-glue-$ACCOUNT   # always the Glue tutorial bucket; ignores a BUCKET set by A2 in ~/.bashrc
 JOB=rides-month
 SCRIPT_SRC=${SCRIPT_SRC:-load_rides_month.py}
 
 aws iam get-role --role-name "$ROLE" >/dev/null 2>&1 || { echo "STOP: role $ROLE not found; run L7's setup_glue.sh first"; exit 1; }
-aws s3api head-bucket --bucket "$BUCKET" >/dev/null 2>&1 || { echo "STOP: bucket $BUCKET not found; run L7's setup_glue.sh first or set BUCKET=<your bucket>"; exit 1; }
+aws s3api head-bucket --bucket "$BUCKET" >/dev/null 2>&1 || { echo "STOP: bucket $BUCKET not found; run the Glue tutorial setup_glue.sh first"; exit 1; }
 
 # Leave SKIP_ROLE_POLICY unset when you run this tutorial setup.
 if [ -z "${SKIP_ROLE_POLICY:-}" ]; then
