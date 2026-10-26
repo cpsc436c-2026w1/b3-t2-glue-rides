@@ -15,7 +15,7 @@ All course tutorials are listed on the [Tutorials page](https://cpsc436c-2026w1.
 
 ## 1. Before you start
 
-We will reuse the setup from the Glue tutorial and the Athena tutorial, and add some new setting on the next step. 
+We will reuse the setup from the Glue tutorial and the Athena tutorial, and add some new settings in the next step. 
 You probably **won't** need to rerun old setup scripts, but the check script below will tell you if you do. 
 
 To check both, and later this tutorial's own setup, open **CloudShell** with the `>_` icon in the top bar and paste
@@ -34,7 +34,7 @@ As a reminder, the Glue tutorial's setup script
 `436c-glue-<your account number>` and the Glue role `436c-glue-notebook`. The Athena tutorial's setup script
 [`setup_athena.sh`](https://github.com/cpsc436c-2026w1/b3-t1-athena-rides#1-set-up-your-account-once) set the Athena
 result location, the Data scanned limit and the `course` data source. Both work in Region **Canada (Central)**.
-It is a good idea to review the setup scripts on your own to learn a bit about IAM and every service limitations and best practices.
+It is a good idea to review the setup scripts on your own to learn a bit about IAM and each service's limits and best practices.
 
 ## 2. Set up the job (once)
 
