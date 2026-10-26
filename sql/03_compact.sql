@@ -1,8 +1,9 @@
--- Step 4: compact the table.
+-- In Step 4, compact the table.
 
--- Before you run it: how many files will the table have afterwards, and how many rows?
+-- Before you run it, predict whether the number of current data files will stay near 992, fall to roughly the
+-- number of days, or increase. Will the row count stay equal to the count after the DELETE?
 OPTIMIZE tutorial.rides_month REWRITE DATA USING BIN_PACK;
--- BIN_PACK combines small files into larger ones, up to a target size: compaction (L10).
+-- BIN_PACK combines small files into larger ones, up to a target size. This is compaction (L10).
 
 SELECT count(*) AS files, round(avg(file_size_in_bytes) / 1e6, 1) AS avg_mb, sum(record_count) AS rows
 FROM tutorial."rides_month$files";

@@ -1,4 +1,4 @@
--- Extra exercise 2: apply changes by key with MERGE, twice.
+-- In extra exercise 2, apply changes by key with MERGE twice.
 -- Replace <account> with your account number (your bucket is 436c-glue-<account>).
 
 CREATE TABLE tutorial.zones
@@ -14,9 +14,9 @@ AS SELECT * FROM (VALUES
     (138, 'Queens', 'LaGuardia International Airport', 'Airports'),
     (300, 'Queens', 'New test zone', 'Boro Zone'))
   AS c (locationid, borough, zone, service_zone);
--- Two of these zones exist already; one is new.
+-- Two of these zones exist already, and one is new.
 
--- Before you run it: how many rows will tutorial.zones have afterwards?
+-- Before you run it, predict whether the row count will stay the same, increase, or decrease.
 MERGE INTO tutorial.zones t
 USING tutorial.zone_changes c
 ON t.locationid = c.locationid
@@ -26,4 +26,5 @@ WHEN NOT MATCHED THEN INSERT (locationid, borough, zone, service_zone)
 
 SELECT count(*) FROM tutorial.zones;
 
--- Before you run the same MERGE again: how many rows afterwards? Then run it and count.
+-- Before you run the same MERGE again, predict whether the row count will be lower than, equal to, or higher than
+-- the count after the first MERGE. Then run it and compare.

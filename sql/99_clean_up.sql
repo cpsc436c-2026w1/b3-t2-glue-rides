@@ -2,4 +2,5 @@
 DROP TABLE IF EXISTS tutorial.zone_changes;
 DROP TABLE IF EXISTS tutorial.zones;
 DROP TABLE IF EXISTS tutorial.rides_month;
--- Then delete the job in CloudShell: aws glue delete-job --job-name rides-month
+DROP DATABASE IF EXISTS tutorial;
+-- Then delete the job in CloudShell with the command in the README.

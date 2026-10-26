@@ -6,6 +6,8 @@
 set -euo pipefail
 export AWS_DEFAULT_REGION=ca-central-1
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+# If any command below fails, print a STOP line naming it before the script exits.
+trap 'echo "STOP: a setup step failed: $BASH_COMMAND (the AWS error is above). Send your account number ($ACCOUNT) and that error to your TA."' ERR
 ROLE=436c-glue-notebook
 BUCKET=${BUCKET:-436c-glue-$ACCOUNT}
 JOB=rides-month
@@ -14,6 +16,7 @@ SCRIPT_SRC=${SCRIPT_SRC:-load_rides_month.py}
 aws iam get-role --role-name "$ROLE" >/dev/null 2>&1 || { echo "STOP: role $ROLE not found; run L7's setup_glue.sh first"; exit 1; }
 aws s3api head-bucket --bucket "$BUCKET" >/dev/null 2>&1 || { echo "STOP: bucket $BUCKET not found; run L7's setup_glue.sh first or set BUCKET=<your bucket>"; exit 1; }
 
+# SKIP_ROLE_POLICY is a hook for staff tests. Students do not set it.
 if [ -z "${SKIP_ROLE_POLICY:-}" ]; then
 aws iam put-role-policy --role-name "$ROLE" --policy-name course-lake-read --policy-document '{
   "Version": "2012-10-17", "Statement": [
