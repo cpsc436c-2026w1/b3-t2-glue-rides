@@ -15,16 +15,16 @@ ok "account $ACCOUNT, Region ca-central-1"
 
 T1="curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/b3-t1-athena-rides/main/setup_athena.sh && bash setup_athena.sh"
 L7="curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/l7-spark-glue/main/setup_glue.sh && bash setup_glue.sh"
-T2="the three lines in the README's step 2 (setup_t2.sh)"
+T2="the three lines under '2. Set up the job (once)' in the README (they run setup_t2.sh)"
 
 aws iam get-role --role-name 436c-glue-notebook >/dev/null 2>&1 \
   && ok "Glue role 436c-glue-notebook (L7 setup)" || bad "no Glue role 436c-glue-notebook" "$L7"
 aws s3api head-bucket --bucket "436c-glue-$ACCOUNT" >/dev/null 2>&1 \
   && ok "bucket 436c-glue-$ACCOUNT (L7 setup)" || bad "no bucket 436c-glue-$ACCOUNT" "$L7"
 aws athena get-data-catalog --name course >/dev/null 2>&1 \
-  && ok "Athena data source course (tutorial 1 setup)" || bad "no Athena data source course" "$T1"
+  && ok "Athena data source course (Tutorial 1 setup)" || bad "no Athena data source course" "$T1"
 LOC=$(aws athena get-work-group --work-group primary --query 'WorkGroup.Configuration.ResultConfiguration.OutputLocation' --output text 2>/dev/null)
-case "$LOC" in s3://*) ok "Athena saves results to $LOC (tutorial 1 setup)";; *) bad "Athena has no result location" "$T1";; esac
+case "$LOC" in s3://*) ok "Athena saves results to $LOC (Tutorial 1 setup)";; *) bad "Athena has no result location" "$T1";; esac
 LIMIT=$(aws athena get-work-group --work-group primary --query 'WorkGroup.Configuration.BytesScannedCutoffPerQuery' --output text 2>/dev/null)
 case "$LIMIT" in ""|None) bad "no Data scanned limit on the workgroup primary" "$T1";;
   *) ok "Data scanned limit $((LIMIT / 1000000000)) GB a query";; esac

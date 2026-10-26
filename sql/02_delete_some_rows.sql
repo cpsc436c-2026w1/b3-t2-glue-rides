@@ -9,9 +9,9 @@ DELETE FROM tutorial.rides_month WHERE base_passenger_fare < 0;
 SELECT count(*) FROM tutorial.rides_month;
 -- This is the new visible row count.
 
-SELECT count(*) AS files, sum(record_count) AS rows
+SELECT count(*) AS files, sum(record_count) AS stored_records
 FROM tutorial."rides_month$files";
--- Compare files and rows with Step 2.
+-- Compare files and stored_records with Step 2, and stored_records with the visible row count above.
 
 SELECT operation, summary['added-delete-files'] AS delete_files
 FROM tutorial."rides_month$snapshots"

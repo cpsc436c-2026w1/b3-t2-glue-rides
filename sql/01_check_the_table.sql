@@ -1,8 +1,8 @@
 -- Step 2: check what the job built. Data source: AwsDataCatalog.
 
-SELECT count(*) AS files, round(avg(file_size_in_bytes) / 1e6, 1) AS avg_mb, sum(record_count) AS rows
+SELECT count(*) AS files, round(avg(file_size_in_bytes) / 1e6, 1) AS avg_mb, sum(record_count) AS stored_records
 FROM tutorial."rides_month$files";
--- Compare the file count with your prediction for files per day (March has 31 days).
+-- Divide the file count by the 31 days of March, and compare the result with your prediction for files per day.
 
 -- The next two statements let you predict the week report's Data scanned from the files' column sizes.
 DESCRIBE tutorial.rides_month;

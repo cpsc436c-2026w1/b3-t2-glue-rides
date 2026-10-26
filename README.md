@@ -8,9 +8,8 @@ table in Athena. Here you try the other two kinds of work A3 asks for, on the sa
 - **Maintain.** The table starts with many small files. You delete some rows, compact the table with `OPTIMIZE`,
   expire old snapshots with `VACUUM`, and count the files in S3 after each step.
 
-A3 asks for the same moves on the grocer data, with less given to you. The main path costs about 4 cents. That is one
-Glue run of about 300 DPU-seconds at $0.44 per DPU-hour, plus Athena under a cent. The extra exercises add about
-3 cents for the April run.
+A3 asks for the same moves on the grocer data, with less given to you. The main path costs about 4 cents, almost all of it for
+one Glue run, and Athena adds under a cent. The extra exercises add about 3 cents, almost all of it for the April run.
 
 All course tutorials are listed on the [Tutorials page](https://cpsc436c-2026w1.github.io/lecture-reviews/tutorials.html).
 
@@ -18,13 +17,15 @@ All course tutorials are listed on the [Tutorials page](https://cpsc436c-2026w1.
 
 You need two earlier setups, both in Region **Canada (Central)**:
 
-- **Tutorial 1's setup** ([b3-t1-athena-rides](https://github.com/cpsc436c-2026w1/b3-t1-athena-rides), section 1):
-  the Athena result location, the Data scanned limit and the `course` data source.
-- **L7's `setup_glue.sh`** ([l7-spark-glue](https://github.com/cpsc436c-2026w1/l7-spark-glue)): your bucket
+- The setup in section 1 of [Tutorial 1](https://github.com/cpsc436c-2026w1/b3-t1-athena-rides). It created the Athena
+  result location, the Data scanned limit and the `course` data source.
+- The setup script `setup_glue.sh` from [L7](https://github.com/cpsc436c-2026w1/l7-spark-glue). It created your bucket
   `436c-glue-<your account number>` and the Glue role `436c-glue-notebook`.
 
-To check both, and later this tutorial's own setup, run this in CloudShell. It only reads your account. Each line
-says ✔ or ✗, and each ✗ says what to run.
+To check both, and later this tutorial's own setup, open **CloudShell** with the `>_` icon in the top bar and paste
+this line. It only reads your account. Each line says ✔ or ✗, and each ✗ is followed by the command that fixes it.
+Before you do section 2, the last three checks show ✗ (the Glue role's access to the course lake, the job script and
+the job `rides-month`), because section 2 creates them.
 
 ```
 curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/b3-t2-glue-rides/main/check_t2.sh && bash check_t2.sh
@@ -41,12 +42,14 @@ bash setup_t2.sh
 ```
 
 The script lets your Glue role read the course lake, copies the job script to your bucket, and creates the Glue job
-`rides-month` (Glue 5.0, two G.1X workers). It ends with:
+`rides-month`. The job runs on Glue 5.0 with two G.1X workers. A G.1X worker counts as 1 DPU (Data Processing Unit),
+the unit Glue bills compute in. The script ends with these lines:
 
 ```
 job     rides-month created
 
 Start it:  aws glue start-job-run --job-name rides-month
+Watch it:  Glue console > ETL jobs > rides-month > Runs (about 2.5 minutes)
 ```
 
 You can safely rerun it, and a rerun resets the job `rides-month` to its original settings. If it stops with a line
@@ -79,53 +82,54 @@ run should reach **Succeeded** after about 2.5 minutes. During the run, open
 <details>
 <summary>Check your predictions (open after the run)</summary>
 
-1. The call `.partitionedBy(F.days("pickup_datetime"))` partitions by pickup day, so March has about 30 partitions.
-   In our run, it had 31.
+1. The call `.partitionedBy(F.days("pickup_datetime"))` partitions by pickup day, so March has one partition for
+   each of its 31 days.
 2. The call `repartition(32)` makes 32 Spark partitions, with one task for each. The table property
-   `write.distribution-mode = none` lets each task write its rows for every day it holds, so dozens of files per day
-   are plausible. In our run, there were 32 files per day and 992 files averaging about 0.4 MB.
-3. The job appends the month again, so the row count roughly doubles. In our run, it rose from 21,280,788 to
-   42,561,576 rows. The script does not check which months it has already loaded. This is Tutorial 1's load-twice
-   problem in a Glue job.
+   `write.distribution-mode = none` lets each task write its rows for every day it holds, so a day can get up to 32
+   files, one from each task. In Step 2 you count the files and divide by 31.
+3. The job appends the month again, so the row count doubles. The script does not check which months it has already
+   loaded. This is Tutorial 1's load-twice problem in a Glue job.
 </details>
 
 ### Step 2: check what the job built
 
-[`sql/01_check_the_table.sql`](sql/01_check_the_table.sql)
-
-Run its statements in the Athena query editor, one at a time. The file first counts the table's files and rows. Then `DESCRIBE` gives each column's field id, and a query on
-`"rides_month$files"` adds up `column_sizes` for the week's files. Use those sizes to predict the week report's Data
-scanned before you run it.
+Run the statements of [`sql/01_check_the_table.sql`](sql/01_check_the_table.sql) in the Athena query editor, one at
+a time. The first statement counts the table's files and rows. `DESCRIBE` then lists the table's columns, and a
+column's place in that list, counting from 1, is its field id. A query on `"rides_month$files"` adds up
+`column_sizes`, the size of each column in each file, for the files of 10 to 16 March. The last statement is the week
+report, which shows the number of trips and the average fare for each pickup borough in that week. Use the sizes to
+predict the week report's Data scanned before you run it. After it runs, write down its run time and Data scanned,
+because you compare them in Step 4.
 
 <details>
 <summary>Check your predictions</summary>
 
-In our run, the table had 992 files averaging 0.4 MB and 21,280,788 rows. The week report showed trips and average
-fare by pickup borough. The job built a rides table that includes pickup borough, which it joined from the zone
-lookup. The report took 0.8 seconds and had 13.1 MB of Data scanned.
+Divided by the 31 days of March, the file count is close to 32 files per day. The job built a rides table that
+includes pickup borough, which it joined from the zone lookup.
 
-In our run, the three columns the week report names summed to 35.3 MB in the week's files. Fare and borough alone
-summed to 13.1 MB, which equals the report's Data scanned. Athena did not read `pickup_datetime`, because the week's
-range lines up with whole-day partitions, so the partitions answer the filter. A3's task 1.1 uses the same move to
+The week report's Data scanned matches `fare_and_borough_mb` and is well below `three_columns_mb`. Athena did not read
+`pickup_datetime`, because the week's range lines up with whole-day partitions, so the partitions answer the filter. A3's task 1.1 uses the same move to
 predict Data scanned from `column_sizes`.
 </details>
 
 ### Step 3: delete some rows
 
-Run [`sql/02_delete_some_rows.sql`](sql/02_delete_some_rows.sql). Then count the table's files in S3 with this
-command in CloudShell:
+Run [`sql/02_delete_some_rows.sql`](sql/02_delete_some_rows.sql) in the Athena query editor, one statement at a time.
+Write down the prediction its comments ask for before you run the `DELETE`. Then count the table's files in S3 with
+this command in CloudShell, and compare the number with the file count from `"rides_month$files"`. The command looks
+up your account number itself and prints one number.
 
 ```
-aws s3 ls s3://436c-glue-<your account number>/tutorial2/warehouse/tutorial.db/rides_month/data/ --recursive | wc -l
+aws s3 ls s3://436c-glue-$(aws sts get-caller-identity --query Account --output text)/tutorial2/warehouse/tutorial.db/rides_month/data/ --recursive | wc -l
 ```
 
 <details>
 <summary>Check your predictions</summary>
 
-In our run, 1,080 rides had a negative fare. After the `DELETE`, the table had 21,279,708 visible rows.
-`"rides_month$files"` still listed the same 992 data files and 21,280,788 stored records. The data files did not
-change. The snapshot list showed an append followed by an overwrite that added 564 delete files. S3 then held 1,556
-files, which was 992 data files plus 564 delete files.
+After the `DELETE`, the visible row count is lower by the number of negative fares you noted. `"rides_month$files"`
+lists the same data files as before, and its `stored_records` total is unchanged, because the data files did not
+change. The snapshot list shows an append followed by an overwrite, and the overwrite added delete files. The S3 count
+equals the `$files` count plus the overwrite's `delete_files`, because Athena's `$files` does not list delete files.
 
 A delete file lists which rows of a data file are deleted (L11), and readers skip those rows. The deleted rides are
 still in the data files, and the older snapshot still reads them. Step 4 writes replacement data files without the
@@ -134,38 +138,38 @@ deleted rides. Step 5 removes the obsolete data and delete files from S3 once no
 
 ### Step 4: compact the table
 
-[`sql/03_compact.sql`](sql/03_compact.sql)
-
-Run it in the Athena query editor. Then run the week report from Step 2 again and compare its Data scanned with
-what you noted then.
+Run [`sql/03_compact.sql`](sql/03_compact.sql) in the Athena query editor, one statement at a time. Then run the week
+report from Step 2 again, and compare its run time and Data scanned with the numbers you wrote down in Step 2. Count
+the files in S3 again with the command from Step 3.
 
 <details>
 <summary>Check your predictions</summary>
 
-In our run, compaction produced 31 files averaging 9.6 MB and kept 21,279,708 visible rows. That is one file per day,
-with the deletes applied. `OPTIMIZE` had 422 MB of Data scanned. The snapshot list showed append, overwrite, then
-replace, and the replace added 31 files and removed 992. The week report then had 9.8 MB of Data scanned, against
-13.1 MB before, with the same answer apart from the deleted rides. Compaction removes per-file work, because Athena
-opens 31 files and reads their footers instead of 992. S3 held 1,587 files after compaction.
+After `OPTIMIZE`, the table has one file for each day, and the visible row count is the same as after the `DELETE`,
+because the rewrite applies the deletes. The snapshot list shows append, overwrite, then replace, and the replace
+added one file per day and removed all the old data files. The week report scans less data than in Step 2 and
+returns the same answer apart from the deleted rides. A query on the week now opens one file per day instead of
+dozens. The S3 count rose by the number of new files, because the old files stay until Step 5.
 </details>
 
 ### Step 5: remove the old files for good
 
 Run [`sql/04_expire_old_snapshots.sql`](sql/04_expire_old_snapshots.sql) in the Athena query editor, one statement at
-a time and in order. Count the files in S3 with the CloudShell command from Step 3 before you start, and again after
-the final `VACUUM`.
+a time and in order. First count the files in S3 with the CloudShell command from Step 3 and write the number down.
+The file asks you to replace `<snapshot_id of the append>` with a number from its first query, in two places. After
+the last `VACUUM`, count the files in S3 again. If the snapshot list still shows more than one snapshot, wait a minute,
+run `VACUUM` again, and count the files once more.
 
 <details>
 <summary>Check your predictions</summary>
 
-In our run, S3 held 1,587 files before `VACUUM`. These were 992 old data files, 564 delete files, and 31 replacement
-data files. The append's snapshot still read the 1,080 deleted rides.
+Before `VACUUM`, S3 holds the old data files, the delete files and the replacement files together, so its count is the
+one from Step 4. The append's snapshot still reads the deleted rides.
 
-`VACUUM` expires snapshots older than 60 seconds and always keeps the newest one. At a student's pace the `DELETE` is
-more than a minute old by then, so one `VACUUM` expires both the append and the overwrite. In our run, S3 then held
-31 files, and time travel to the append failed. A `VACUUM` run within about a minute of the `DELETE` keeps the
-overwrite, which still needs the old files, so no file is deleted until a second `VACUUM`. That is what our first,
-scripted run saw.
+`VACUUM` expires snapshots older than 60 seconds and always keeps the newest one. At a normal pace the `DELETE` is
+more than a minute old by then, so one `VACUUM` expires both the append and the overwrite. S3 then holds only the
+replacement files, one per day, and time travel to the append fails. A `VACUUM` run within about a minute of the
+`DELETE` keeps the overwrite, which still needs the old files, so no file is deleted until a second `VACUUM`.
 
 After this step the deleted rides are gone from S3 and from every snapshot. The order is delete, then compact, then
 expire. That order makes a deletion final, and A3's erasure requests need it.
@@ -179,60 +183,67 @@ Run this command in CloudShell:
 aws glue get-job-runs --job-name rides-month --max-items 1 --query 'JobRuns[0].[ExecutionTime,DPUSeconds]'
 ```
 
-Glue bills DPU-seconds: DPUs × run time (two G.1X workers are 2 DPUs), at $0.44 per DPU-hour in ca-central-1, per
-second with a 1-minute minimum. Price one run, and the same run every night for a year.
+The command prints two numbers, the run time in seconds and the DPU-seconds, which are the DPUs times the run time.
+Your job's two G.1X workers are 2 DPUs. Glue charges $0.44 per DPU-hour in Canada (Central), billed per second with a
+1-minute minimum. Price one run, and then the same run every night for a year.
 
 <details>
 <summary>Check your answer</summary>
 
-Run times vary. Over five of our runs the command printed between `[138, 276.0]` and `[170, 341.0]`, about
-`[150, 300]` on average. So one run costs about 300 / 3600 × 0.44 = $0.037, between $0.034 and $0.042, and nightly
-runs for a year cost about 365 × $0.037, roughly $13. Your own numbers will land near these. A3 asks the same for its
+The run time varies. Across five of our runs it was 138 to 170 seconds, which is 276 to 341 DPU-seconds, and about
+150 seconds and 300 DPU-seconds on average. So one run costs about 300 / 3600 × $0.44 = $0.037, between $0.034 and
+$0.042, and nightly runs for a year cost about 365 × $0.037, roughly $13. Your own numbers will land near these. A3 asks the same for its
 own jobs and compares them with a small EMR cluster.
 </details>
 
-Finally, decide which line you would change so that the job writes fewer files in the first place.
+Finally, open [`load_rides_month.py`](load_rides_month.py) again and decide which line you would change so that the job
+writes fewer files for each day.
 
 <details>
 <summary>One answer</summary>
 
 Lower `repartition(32)`, or change `write.distribution-mode` from `none` so that Iceberg groups rows by day before
-writing. The job sets `write.distribution-mode` only when it creates the table. To try the change, drop
-`tutorial.rides_month` before you rerun the changed job.
+writing. The job sets `write.distribution-mode` only when it creates the table. To try a change, edit `load_rides_month.py` in
+CloudShell and run `bash setup_t2.sh` again, so that the edited script reaches your bucket. Then run
+`DROP TABLE tutorial.rides_month;` in Athena and start the job again with the command from Step 1.
 </details>
 
 ## 4. Extra exercises
 
-A3's task 3.2 applies members' changes with this `MERGE`, so the second exercise is the one to do if you do one.
+If you have time for only one extra exercise, do the second one, because task 3.2 of A3 also applies changes to a
+table with a `MERGE`.
 
-**Load a second month.** Load April into the same table, then compact again, with
-[`sql/05_extra_second_month.sql`](sql/05_extra_second_month.sql). Start the job for April first with this command in
-CloudShell:
+**Load a second month.** The job loads April into the same table, and then you compact the table again. Start the
+job for April with this command in CloudShell:
 
 ```
 aws glue start-job-run --job-name rides-month --arguments '{"--MONTH":"2024-04"}'
 ```
 
-Wait until the run shows **Succeeded**, about 2.5 minutes, before you run the SQL.
+Wait until the run shows **Succeeded**, about 2.5 minutes. Then run
+[`sql/05_extra_second_month.sql`](sql/05_extra_second_month.sql) in the Athena query editor, one statement at a time.
 
 <details>
 <summary>Check your predictions</summary>
 
-In our run, March had 31 files and April had 960 files before compaction. `OPTIMIZE` had 394 MB of Data scanned and
-rewrote only April, because it rewrites only partitions with small files and March was already compacted. Afterwards,
-March still had 31 files and April had 30. A table that gets a month at a time needs the same routine, so compact
+Before compaction, March has one file for each day, and April has dozens of files for each of its 30 days.
+`OPTIMIZE` rewrites only April. Athena rewrites a partition only when at least 5 of its data files need rewriting (the
+table property `optimize_rewrite_data_file_threshold`, default 5), and each March day now has one file. Its Data
+scanned is in the same ballpark as the March compaction, because April is about as big as March. Afterwards, April
+has one file for each day, like March. A table that gets a month at a time needs the same routine, so compact
 the new month after each load.
 </details>
 
-**Apply changes by key with `MERGE`, twice**, with [`sql/06_extra_merge.sql`](sql/06_extra_merge.sql). `MERGE`
-matches each incoming row to the table by a key. It updates the rows that match and inserts the rest. Rides have no
+**Apply changes by key with `MERGE`, twice.** Run [`sql/06_extra_merge.sql`](sql/06_extra_merge.sql) in the Athena
+query editor, one statement at a time, after you replace `<account>` with your account number in its two `location`
+lines. `MERGE` matches each incoming row to the table by a key. It updates the rows that match and inserts the rest. Rides have no
 unique key, so this uses the zone lookup, keyed by `locationid`.
 
 <details>
 <summary>Check your predictions</summary>
 
-In our run, the table had 265 zones before the first `MERGE`, 266 after the first `MERGE`, and 266 after the second
-`MERGE`. The first one renamed two zones and added one. Tutorial 1's `INSERT` run twice doubled the rows. `MERGE` run
+The table has one zone more after the first `MERGE` than before it, and the second `MERGE` leaves the count unchanged.
+The first `MERGE` renamed two zones and added one. Tutorial 1's `INSERT` run twice doubled the rows. `MERGE` run
 twice leaves the same rows, though it still records a new snapshot. If two incoming rows matched the same zone,
 `MERGE` would fail rather than guess which one wins (L11).
 </details>
@@ -242,7 +253,7 @@ twice leaves the same rows, though it still records a new snapshot. If two incom
 Run the four statements of [`sql/99_clean_up.sql`](sql/99_clean_up.sql) in Athena, one at a time. The three
 `DROP TABLE` statements and `DROP DATABASE` should all succeed. Refresh the `AwsDataCatalog` list, and the `tutorial`
 database should be gone. For an Iceberg table, `DROP TABLE` also deletes its data files. If `DROP DATABASE` fails
-because the database is not empty, tutorial 1's tables are still in it. Run tutorial 1's clean-up, then run
+because the database is not empty, Tutorial 1's tables are still in it. Run Tutorial 1's clean-up, then run
 `DROP DATABASE` again.
 
 Then delete the job with this command in CloudShell:
@@ -251,14 +262,15 @@ Then delete the job with this command in CloudShell:
 aws glue delete-job --job-name rides-month
 ```
 
-It prints `{"JobName": "rides-month"}`. To check what is left of the tutorial in your bucket, run this command:
+It prints `{"JobName": "rides-month"}`. Then check what is left of the tutorial in your bucket with this command in
+CloudShell:
 
 ```
-aws s3 ls s3://436c-glue-<your account number>/tutorial2/ --recursive
+aws s3 ls s3://436c-glue-$(aws sts get-caller-identity --query Account --output text)/tutorial2/ --recursive
 ```
 
 The only file left should be the job script, `tutorial2/load_rides_month.py`. Your bucket, the Glue role and its
-policy stay, and they cost nothing.
+policy stay, because A3 uses them. The only charge left is S3 storage for the small job script.
 
 ## Files
 

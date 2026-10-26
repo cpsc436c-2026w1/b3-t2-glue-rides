@@ -45,7 +45,7 @@ else:
     (rides.writeTo(TABLE)
         .partitionedBy(F.days("pickup_datetime"))
         .tableProperty("format-version", "2")                  # Iceberg format version 2: needed for row-level deletes and MERGE
-        .tableProperty("write.distribution-mode", "none")   # each task writes its own rows straight out: fast, many small files
+        .tableProperty("write.distribution-mode", "none")   # each task writes its rows as they come, with no regrouping by day first
         .tableProperty("write.spark.fanout.enabled", "true")   # lets each task write to many day partitions without sorting first
         .create())
 
