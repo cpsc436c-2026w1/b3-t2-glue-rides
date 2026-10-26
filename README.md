@@ -230,7 +230,7 @@ Wait until the run shows **Succeeded**, about 2.5 minutes. Then run
 Before compaction, March has one file for each day, and April has dozens of files for each of its 30 days.
 `OPTIMIZE` rewrites only April. Athena rewrites a partition only when at least 5 of its data files need rewriting (the
 table property `optimize_rewrite_data_file_threshold`, default 5), and each March day now has one file. Its Data
-scanned is in the same ballpark as the March compaction, because April is about as big as March. Afterwards, April
+scanned is close to that of the March compaction, because April is about as large as March. Afterwards, April
 has one file for each day, like March. A table that gets a month at a time needs the same routine, so compact
 the new month after each load.
 </details>
