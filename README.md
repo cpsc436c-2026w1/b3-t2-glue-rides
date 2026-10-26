@@ -295,6 +295,35 @@ aws s3 ls s3://436c-glue-$(aws sts get-caller-identity --query Account --output 
 The only file left should be the job script, `tutorial2/load_rides_month.py`. Your bucket, the Glue role and its
 policy stay, because A3 uses them. The job script left in your bucket adds a small S3 storage charge.
 
+## 6. Recap and reflection
+
+<details>
+<summary>What you did, why, and how the same work runs outside this tutorial (open after the tutorial)</summary>
+
+- **You loaded the month with a Glue job, not a notebook.** In the Block 2 Glue tutorial, notebooks were for
+  interactive work. A load that repeats is better as a job, because every run uses the same script and settings, you
+  pay only for the run, and a scheduler can start it every night. Real pipelines run their loads this way.
+- **You checked the table in Athena.** Athena is the table's main consumer, so you checked it from the consumer's
+  side. Engines sometimes treat a table slightly differently, and Athena shows what the people who query it get. Its
+  Data scanned also shows what each query costs, so you can see whether a change to the load makes later queries
+  cheaper or dearer.
+- **You predicted Data scanned from the table's own metadata.** `column_sizes` in `"rides_month$files"` gives the
+  bytes each column takes in each file. A filter that lines up with the day partitions doesn't even read its date
+  column. A3's task 1.1 asks you to make the same prediction before a large query.
+- **You counted files in S3 as well as in the table.** The table lists the files of its current snapshot. S3 holds
+  every file that some snapshot still needs, and you pay to store all of them.
+- **You deleted, compacted and expired, in that order.** `DELETE` only writes delete files, so the rows are hidden
+  but still stored. `OPTIMIZE` rewrites the data files without those rows and merges small files into larger ones.
+  `VACUUM` then removes snapshots older than the table's age setting, with the files only they needed. In real
+  systems this order is what makes an erasure request final, and the age setting comes from a retention policy,
+  usually days rather than 60 seconds.
+- **You saw why small files cost.** The job wrote 32 small files a day because 32 tasks each wrote some of every
+  day. Compaction fixes it after the fact. Fewer tasks, or a write that groups rows by day, fixes it at the source.
+- **You priced the work.** A load is priced by its DPU-seconds, and a query by its Data scanned. Multiplying one run
+  by a year of nightly runs is how you compare engines. A3's task 2 compares Glue with an EMR cluster this way.
+
+</details>
+
 ## Files
 
 | File | What it is |
