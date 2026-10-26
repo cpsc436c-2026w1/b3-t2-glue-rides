@@ -23,6 +23,13 @@ You need two earlier setups, both in Region **Canada (Central)**:
 - **L7's `setup_glue.sh`** ([l7-spark-glue](https://github.com/cpsc436c-2026w1/l7-spark-glue)): your bucket
   `436c-glue-<your account number>` and the Glue role `436c-glue-notebook`.
 
+To check both, and later this tutorial's own setup, run this in CloudShell. It only reads your account. Each line
+says ✔ or ✗, and each ✗ says what to run.
+
+```
+curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/b3-t2-glue-rides/main/check_t2.sh && bash check_t2.sh
+```
+
 ## 2. Set up the job (once)
 
 Open **CloudShell** with the `>_` icon in the top bar and paste:
@@ -44,7 +51,7 @@ Start it:  aws glue start-job-run --job-name rides-month
 
 You can safely rerun it, and a rerun resets the job `rides-month` to its original settings. If it stops with a line
 starting `STOP:`, do what that line says. It either names a setup to run first, or asks you to send the error and
-your account number to your TA.
+your account number to your TA. Whenever a step fails, run the check from section 1 again first.
 
 ## 3. Steps
 
@@ -256,6 +263,7 @@ policy stay, and they cost nothing.
 
 | File | What it is |
 |---|---|
+| [`check_t2.sh`](check_t2.sh) | This script checks your account for the earlier setups and this tutorial's setup, changes nothing, and says what to run for anything missing. |
 | [`setup_t2.sh`](setup_t2.sh) | This script performs the one-time setup. It grants the Glue role read access to the course lake, copies the job script to your bucket, and creates `rides-month`. |
 | [`load_rides_month.py`](load_rides_month.py) | This Glue job reads one month of rides and the zone lookup, then writes `tutorial.rides_month`. |
 | [`sql/`](sql/) | This directory contains the SQL for each step, with the prediction prompts in the comments. |
