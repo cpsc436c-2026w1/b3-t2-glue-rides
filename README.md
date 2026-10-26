@@ -41,9 +41,7 @@ curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/b3-t2-glue-rides/ma
 bash setup_t2.sh
 ```
 
-The script lets your Glue role read the course lake, copies the job script to your bucket, and creates the Glue job
-`rides-month`. The job runs on Glue 5.0 with two G.1X workers. A G.1X worker counts as 1 DPU (Data Processing Unit),
-the unit Glue bills compute in. The script ends with these lines:
+The script ends with these lines:
 
 ```
 job     rides-month created
@@ -51,6 +49,23 @@ job     rides-month created
 Start it:  aws glue start-job-run --job-name rides-month
 Watch it:  Glue console > ETL jobs > rides-month > Runs (about 2.5 minutes)
 ```
+
+**Where the job comes from.** A Glue job is a script in S3, plus settings that say how to run it. The three lines
+above did both steps for you:
+
+1. `curl` downloaded the job script, [`load_rides_month.py`](load_rides_month.py), from this repository into
+   CloudShell.
+2. `setup_t2.sh` copied the script to your bucket, at
+   `s3://436c-glue-<your account number>/tutorial2/load_rides_month.py`.
+3. `setup_t2.sh` then created the job `rides-month`. The job points at that S3 file and runs it as your Glue role
+   `436c-glue-notebook`, on Glue 5.0 with two G.1X workers. Its default arguments set the month
+   (`--MONTH 2024-03`) and the database (`--DATABASE tutorial`). The script also lets the role read the course lake,
+   which the job reads its rides from.
+
+This is the usual pathway for any Glue job: write the script, put it in S3, then create a job that names the script,
+a role and the workers. In the console, **Glue**, **ETL jobs**, `rides-month` shows the job's settings on **Job
+details** and the script itself on **Script**. A G.1X worker counts as 1 DPU (Data Processing Unit), the unit Glue
+bills compute in.
 
 You can safely rerun it, and a rerun resets the job `rides-month` to its original settings. If it stops with a line
 starting `STOP:`, do what that line says. It either names a setup to run first, or asks you to send the error and
@@ -64,14 +79,21 @@ the step's box after you have run it.
 
 ### Step 1: start the job, then read it while it runs
 
-Run this command in CloudShell:
+In the [Block 2 Glue tutorial](https://github.com/cpsc436c-2026w1/l7-spark-glue), we used Glue notebooks for
+interactive queries. Repeated work, such as an ETL load like this one, is better run as a Glue job. A job is
+reproducible: every run uses the same script and settings. You are billed only for the run itself, and you don't need
+to worry about starting and stopping a notebook session. A job can also run on a schedule with EventBridge Scheduler,
+for example every night.
+
+Start the job once, with this command in CloudShell. It prints a job-run id.
 
 ```
 aws glue start-job-run --job-name rides-month
 ```
 
-The command prints a job-run id. In the Glue console, open **ETL jobs**, choose `rides-month`, and open **Runs**. The
-run should reach **Succeeded** after about 2.5 minutes. During the run, open
+Watch the run in the console: **Glue**, **ETL jobs**, `rides-month`, **Runs**. Don't press **Run** there, because that
+starts a second run, which loads March again and doubles the table. The run reaches **Succeeded** after about 2.5
+minutes. If it fails, the **Runs** page shows the error. While it runs, open
 [`load_rides_month.py`](load_rides_month.py) and write down your answers to these questions.
 
 1. Which line decides how the table is partitioned? Will March have roughly one partition, about 30 partitions, or
