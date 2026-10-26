@@ -55,6 +55,13 @@ Start it:  aws glue start-job-run --job-name rides-month
 Watch it:  Glue console > ETL jobs > rides-month > Runs (about 2.5 minutes)
 ```
 
+Now run the check from section 1 again. Every line should show ✔, and the last one says the job has not run yet.
+If a line still shows ✗, run the fix it prints, then the check again, before you start Step 1.
+
+```
+curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/b3-t2-glue-rides/main/check_t2.sh && bash check_t2.sh
+```
+
 **Where the job comes from.** A Glue job is a script in S3, plus settings that say how to run it. The three lines
 above did both steps for you:
 
