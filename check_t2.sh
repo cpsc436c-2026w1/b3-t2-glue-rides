@@ -15,7 +15,7 @@ ok "account $ACCOUNT, Region ca-central-1"
 
 T1="curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/b3-t1-athena-rides/main/setup_athena.sh && bash setup_athena.sh"
 L7="curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/l7-spark-glue/main/setup_glue.sh && bash setup_glue.sh"
-T2="the three lines under '2. Set up the job (once)' in the README (they run setup_t2.sh)"
+T2="run the three lines under '2. Set up the job (once)' in the README (they run setup_t2.sh)"
 
 aws iam get-role --role-name 436c-glue-notebook >/dev/null 2>&1 \
   && ok "Glue role 436c-glue-notebook (L7 setup)" || bad "no Glue role 436c-glue-notebook" "$L7"

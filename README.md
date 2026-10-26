@@ -270,7 +270,7 @@ aws s3 ls s3://436c-glue-$(aws sts get-caller-identity --query Account --output 
 ```
 
 The only file left should be the job script, `tutorial2/load_rides_month.py`. Your bucket, the Glue role and its
-policy stay, because A3 uses them. The only charge left is S3 storage for the small job script.
+policy stay, because A3 uses them. The job script left in your bucket adds a small S3 storage charge.
 
 ## Files
 

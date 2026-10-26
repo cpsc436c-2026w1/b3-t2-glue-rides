@@ -16,7 +16,7 @@ SCRIPT_SRC=${SCRIPT_SRC:-load_rides_month.py}
 aws iam get-role --role-name "$ROLE" >/dev/null 2>&1 || { echo "STOP: role $ROLE not found; run L7's setup_glue.sh first"; exit 1; }
 aws s3api head-bucket --bucket "$BUCKET" >/dev/null 2>&1 || { echo "STOP: bucket $BUCKET not found; run L7's setup_glue.sh first or set BUCKET=<your bucket>"; exit 1; }
 
-# Set SKIP_ROLE_POLICY=1 to skip the policy step.
+# Leave SKIP_ROLE_POLICY unset when you run this tutorial setup.
 if [ -z "${SKIP_ROLE_POLICY:-}" ]; then
 aws iam put-role-policy --role-name "$ROLE" --policy-name course-lake-read --policy-document '{
   "Version": "2012-10-17", "Statement": [
