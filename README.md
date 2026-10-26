@@ -85,9 +85,10 @@ your account number to your TA. Whenever a step fails, run the check from sectio
 
 ## 3. Steps
 
-Run SQL in the Athena query editor with **Data source** `AwsDataCatalog`, one statement at a time. Each step's SQL is
-in [`sql/`](sql/), and its comments say what to predict before you run a statement. Write each prediction down, then open
-the step's box after you have run it.
+Step 1 starts the Glue job from CloudShell. From Step 2 on, you check and change the table with SQL in the Athena query
+editor, with **Data source** `AwsDataCatalog`, one statement at a time, and you count its files in S3 from CloudShell.
+Each step's SQL is in [`sql/`](sql/), and its comments say what to predict before you run a statement. Write each
+prediction down, then open the step's box after you have run it.
 
 ### Step 1: start the job, then read it while it runs
 
