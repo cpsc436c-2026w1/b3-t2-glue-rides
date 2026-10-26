@@ -42,6 +42,31 @@ As a reminder, the Glue tutorial's setup script
 result location, the Data scanned limit and the `course` data source. Both work in Region **Canada (Central)**.
 It is a good idea to review the setup scripts on your own to learn a bit about IAM and each service's limits and best practices.
 
+<details>
+<summary>If you haven't run the Glue or Athena tutorial setup</summary>
+
+Run the missing setups in CloudShell, in this order. Each one is safe to rerun.
+
+1. Check that the Region at the top right of the console is **Canada (Central)**.
+2. Glue tutorial setup, which creates your bucket and the Glue role:
+
+   ```
+   curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/l7-spark-glue/main/setup_glue.sh && bash setup_glue.sh
+   ```
+
+3. Athena tutorial setup, which sets the Athena result location, the Data scanned limit and the `course` data source:
+
+   ```
+   curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/b3-t1-athena-rides/main/setup_athena.sh && bash setup_athena.sh
+   ```
+
+4. Run the check above again. The Glue and Athena lines should now show ✔, and the last three lines still show ✗
+   until you do section 2.
+
+If a script stops with a line starting `STOP:`, send that line and your account number to your TA.
+
+</details>
+
 ## 2. Set up the job (once)
 
 Open **CloudShell** with the `>_` icon in the top bar and paste:
@@ -216,7 +241,7 @@ more than a minute old by then, so one `VACUUM` expires both the append and the 
 replacement files, one per day, and time travel to the append fails. A `VACUUM` run within about a minute of the
 `DELETE` keeps the overwrite, which still needs the old files, so no file is deleted until a second `VACUUM`.
 
-After this step the deleted rides are gone from S3 and from every snapshot. The order is delete, then compact, then
+After this step the deleted rides are gone from S3 and every snapshot. The order is delete, then compact, then
 expire. That order makes a deletion final, and A3's erasure requests need it.
 </details>
 

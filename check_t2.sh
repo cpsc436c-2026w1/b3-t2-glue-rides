@@ -5,6 +5,7 @@
 # CloudShell sets AWS_REGION to the console's Region, and AWS_REGION wins over AWS_DEFAULT_REGION, so set both.
 export AWS_REGION=ca-central-1 AWS_DEFAULT_REGION=ca-central-1
 FAIL=0
+NEED_GLUE=0; NEED_ATHENA=0
 ERR=$(mktemp); trap 'rm -f "$ERR"' EXIT
 ok()  { echo "✔ $1"; }
 bad() { echo "✗ $1"; [ -s "$ERR" ] && echo "    AWS said: $(grep -m1 . "$ERR" | cut -c1-200)"; echo "    fix: $2"; FAIL=$((FAIL + 1)); }
@@ -20,15 +21,15 @@ L7="curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/l7-spark-glue/m
 T2="run the three lines under '2. Set up the job (once)' in the README (they run setup_t2.sh)"
 
 aws iam get-role --role-name 436c-glue-notebook >/dev/null 2>"$ERR" \
-  && ok "Glue role 436c-glue-notebook (Glue tutorial setup)" || bad "no Glue role 436c-glue-notebook" "$L7"
+  && ok "Glue role 436c-glue-notebook (Glue tutorial setup)" || { bad "no Glue role 436c-glue-notebook" "$L7"; NEED_GLUE=1; }
 aws s3api head-bucket --bucket "436c-glue-$ACCOUNT" >/dev/null 2>"$ERR" \
-  && ok "bucket 436c-glue-$ACCOUNT (Glue tutorial setup)" || bad "no bucket 436c-glue-$ACCOUNT" "$L7"
+  && ok "bucket 436c-glue-$ACCOUNT (Glue tutorial setup)" || { bad "no bucket 436c-glue-$ACCOUNT" "$L7"; NEED_GLUE=1; }
 aws athena get-data-catalog --name course >/dev/null 2>"$ERR" \
-  && ok "Athena data source course (Athena tutorial setup)" || bad "no Athena data source course" "$T1"
+  && ok "Athena data source course (Athena tutorial setup)" || { bad "no Athena data source course" "$T1"; NEED_ATHENA=1; }
 LOC=$(aws athena get-work-group --work-group primary --query 'WorkGroup.Configuration.ResultConfiguration.OutputLocation' --output text 2>/dev/null)
-case "$LOC" in s3://*) ok "Athena saves results to $LOC (Athena tutorial setup)";; *) bad "Athena has no result location" "$T1";; esac
+case "$LOC" in s3://*) ok "Athena saves results to $LOC (Athena tutorial setup)";; *) bad "Athena has no result location" "$T1"; NEED_ATHENA=1;; esac
 LIMIT=$(aws athena get-work-group --work-group primary --query 'WorkGroup.Configuration.BytesScannedCutoffPerQuery' --output text 2>/dev/null)
-case "$LIMIT" in ""|None) bad "no Data scanned limit on the workgroup primary" "$T1";;
+case "$LIMIT" in ""|None) bad "no Data scanned limit on the workgroup primary" "$T1"; NEED_ATHENA=1;;
   *) ok "Data scanned limit $((LIMIT / 1000000000)) GB a query";; esac
 
 aws iam get-role-policy --role-name 436c-glue-notebook --policy-name course-lake-read >/dev/null 2>"$ERR" \
@@ -49,4 +50,12 @@ else
 fi
 
 echo
+if [ "$NEED_GLUE" -eq 1 ] || [ "$NEED_ATHENA" -eq 1 ]; then
+  echo "An earlier tutorial's setup is missing. Run these in CloudShell, in this order, then run this check again:"
+  N=1
+  [ "$NEED_GLUE" -eq 1 ] && { echo "  $N. Glue tutorial setup:   $L7"; N=$((N + 1)); }
+  [ "$NEED_ATHENA" -eq 1 ] && { echo "  $N. Athena tutorial setup: $T1"; N=$((N + 1)); }
+  echo "  $N. This tutorial's setup: the three lines under '2. Set up the job (once)' in the README"
+  echo
+fi
 if [ "$FAIL" -eq 0 ]; then echo "All checks passed."; else echo "$FAIL check(s) failed. Run each fix above, then run this check again."; fi
