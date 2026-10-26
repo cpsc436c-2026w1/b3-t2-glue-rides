@@ -9,7 +9,7 @@ table in Athena. Here you try the other two kinds of work A3 asks for, on the sa
   expire old snapshots with `VACUUM`, and count the files in S3 after each step.
 
 A3 asks for the same moves on the grocer data, with less given to you. The main path costs about 4 cents. That is one
-Glue run of about 280 DPU-seconds at $0.44 per DPU-hour, plus Athena under a cent. The extra exercises add about
+Glue run of about 300 DPU-seconds at $0.44 per DPU-hour, plus Athena under a cent. The extra exercises add about
 3 cents for the April run.
 
 All course tutorials are listed on the [Tutorials page](https://cpsc436c-2026w1.github.io/lecture-reviews/tutorials.html).
@@ -185,9 +185,10 @@ second with a 1-minute minimum. Price one run, and the same run every night for 
 <details>
 <summary>Check your answer</summary>
 
-In our run, the command printed `[140, 281.0]`, so one run cost 281 / 3600 × 0.44 = $0.034. Nightly runs for a year
-cost 365 × $0.034, about $12.50. A3 asks the same for
-its own jobs and compares it with a small EMR cluster.
+Run times vary. Over five of our runs the command printed between `[138, 276.0]` and `[170, 341.0]`, about
+`[150, 300]` on average. So one run costs about 300 / 3600 × 0.44 = $0.037, between $0.034 and $0.042, and nightly
+runs for a year cost about 365 × $0.037, roughly $13. Your own numbers will land near these. A3 asks the same for its
+own jobs and compares them with a small EMR cluster.
 </details>
 
 Finally, decide which line you would change so that the job writes fewer files in the first place.
