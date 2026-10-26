@@ -31,12 +31,10 @@ AWSAccountGroup(yours, "Your account") {
   rectangle "$CloudShellIMG()\nCloudShell" as shell
 }
 
-rectangle "<color:#7D8998>A3: a similar connected\n<color:#7D8998>lakehouse for groceries data" as a3 #FFFFFF;line:7D8998;line.dashed
 
 lakehouse -r-> job : $step(1) load
 job -r-> tbl : $step(2) write
 tbl -r-> files
 athena -d-> tbl : $step(3) check, delete,\ncompact, expire
 shell -d-> files : $step(4) count files
-course -[hidden]d-> a3
 @enduml
