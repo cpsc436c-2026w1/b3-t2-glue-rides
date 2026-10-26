@@ -8,12 +8,12 @@ table in Athena. Here you try the other two kinds of work A3 asks for, on the sa
 - **Maintain.** The table starts with many small files. You delete some rows, compact the table with `OPTIMIZE`,
   expire old snapshots with `VACUUM`, and count the files in S3 after each step.
 
-You build your own small lakehouse. The course lakehouse stays read-only in the course account. A Glue job copies one month of
-rides from it into an Iceberg table you own, in your own bucket. You then query and change that table in Athena, and
+You build your own small lakehouse. The course data stays read-only in the course account. A Glue job reads one month of ride
+files from it and writes them into an Iceberg table you own, in your own bucket. You then query and change that table in Athena, and
 look at its files in S3. In [A3](https://ilm.wiki/436c/a3) you will do a similar connected lakehouse setup for
 groceries data.
 
-<!-- FIGURE: diagrams/t2-lake.svg goes here -->
+![Your own small lakehouse: a Glue job loads the course ride files (1) and writes an Iceberg table in your account (2). Athena checks and changes the table (3), and CloudShell counts its files in S3 (4).](diagrams/t2-lake.svg)
 
 The main path costs about 4 cents, almost all of it for one Glue run, and Athena adds under a cent. The extra exercises add about 3 cents, almost all of it for the April run.
 
@@ -396,6 +396,7 @@ policy stay, because A3 uses them. The job script left in your bucket adds a sma
 | File | What it is |
 |---|---|
 | [`check_t2.sh`](check_t2.sh) | This script checks your account for the earlier setups and this tutorial's setup, changes nothing, and says what to run for anything missing. |
+| [`diagrams/t2-lake.svg`](diagrams/t2-lake.svg) | The figure at the top. Its source is `diagrams/t2-lake.puml`, drawn in PlantUML with the AWS icons. |
 | [`rerun_glue6.sh`](rerun_glue6.sh) | For the optional Glue 6.0 exercise. This script makes a Glue 6.0 copy of the job, `rides-month-g6`, with the same script, role, workers and arguments. |
 | [`setup_t2.sh`](setup_t2.sh) | This script performs the one-time setup. It grants the Glue role read access to the course lakehouse, copies the job script to your bucket, and creates `rides-month`. |
 | [`load_rides_month.py`](load_rides_month.py) | This Glue job reads one month of rides and the zone lookup, then writes `tutorial.rides_month`. |

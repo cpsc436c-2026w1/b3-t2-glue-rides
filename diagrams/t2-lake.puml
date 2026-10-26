@@ -1,0 +1,42 @@
+@startuml t2-lake
+' Tutorial 2: what students build, in the style of A3's overview (L11). Shape only; the README gives the facts.
+' 1 load the course ride files with a Glue job, 2 write an Iceberg table, 3 change it from Athena, 4 count its files.
+' Render: house prelude and vendored icons from 2026w1-slides/tools/plantuml, as its render.py does (temp copy, AWSPUML_DIST
+' rewritten, plantuml -tsvg, plain_spaces); the include path below resolves only in that temp copy.
+!include ../tools/plantuml/436c.iuml
+!include AWSPuml/AWSExperimental.puml
+!include AWSPuml/Groups/AWSAccount.puml
+!include AWSPuml/Analytics/Athena.puml
+!include AWSPuml/Analytics/Glue.puml
+!include AWSPuml/Analytics/GlueDataCatalog.puml
+!include AWSPuml/Storage/SimpleStorageService.puml
+!include AWSPuml/DeveloperTools/CloudShell.puml
+
+skinparam backgroundColor #FFFFFF
+skinparam wrapWidth 600
+skinparam linetype polyline
+skinparam rectangle {
+  BorderColor transparent
+}
+
+AWSAccountGroup(course, "Course account (read only)") {
+  rectangle "$SimpleStorageServiceIMG()\nride files in S3\none month of trips (Parquet)\nzones (CSV)" as lakehouse
+}
+
+AWSAccountGroup(yours, "Your account") {
+  rectangle "$GlueIMG()\nGlue job\nrides-month" as job
+  rectangle "$GlueDataCatalogIMG()\nIceberg table\ntutorial.rides_month" as tbl
+  rectangle "$SimpleStorageServiceIMG()\ntable files\ns3://436c-glue-<account>/\ntutorial2/" as files
+  rectangle "$AthenaIMG()\nAthena\nquery editor" as athena
+  rectangle "$CloudShellIMG()\nCloudShell" as shell
+}
+
+rectangle "<color:#7D8998>A3: a similar connected\n<color:#7D8998>lakehouse for groceries data" as a3 #FFFFFF;line:7D8998;line.dashed
+
+lakehouse -r-> job : $step(1) load
+job -r-> tbl : $step(2) write
+tbl -r-> files
+athena -d-> tbl : $step(3) check, delete,\ncompact, expire
+shell -d-> files : $step(4) count files
+course -[hidden]d-> a3
+@enduml
