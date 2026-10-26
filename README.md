@@ -15,7 +15,7 @@ groceries data.
 
 ![Your own small lakehouse: a Glue job loads the course ride files (1) and writes an Iceberg table in your account (2). Athena checks and changes the table (3), and CloudShell counts its files in S3 (4).](diagrams/t2-lake.svg)
 
-The main path costs about 4 cents, almost all of it for one Glue run, and Athena adds under a cent. The extra exercises add about 3 cents, almost all of it for the April run.
+The main path costs about $0.04, almost all of it for one Glue run, and Athena adds < $0.01. The extra exercises add about $0.03 on a single run.
 
 All course tutorials are listed on the [Tutorials page](https://cpsc436c-2026w1.github.io/lecture-reviews/tutorials.html).
 
