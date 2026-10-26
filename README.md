@@ -15,21 +15,25 @@ All course tutorials are listed on the [Tutorials page](https://cpsc436c-2026w1.
 
 ## 1. Before you start
 
-We will reuse the setup from the Glue tutorial and the Athena tutorial. You probably **won't** need to rerun them.
-The check script below will tell you if you do. As a reminder, the Glue tutorial's setup script
-[`setup_glue.sh`](https://github.com/cpsc436c-2026w1/l7-spark-glue#1-set-up-your-account-once) created your bucket
-`436c-glue-<your account number>` and the Glue role `436c-glue-notebook`. The Athena tutorial's setup script
-[`setup_athena.sh`](https://github.com/cpsc436c-2026w1/b3-t1-athena-rides#1-set-up-your-account-once) set the Athena
-result location, the Data scanned limit and the `course` data source. Both work in Region **Canada (Central)**.
+We will reuse the setup from the Glue tutorial and the Athena tutorial, and add some new setting on the next step. 
+You probably **won't** need to rerun old setup scripts, but the check script below will tell you if you do. 
 
 To check both, and later this tutorial's own setup, open **CloudShell** with the `>_` icon in the top bar and paste
-this line. It only reads your account. Each line says ✔ or ✗, and each ✗ is followed by the command that fixes it.
-Before you do section 2, the last three checks show ✗ (the Glue role's access to the course lake, the job script and
-the job `rides-month`), because section 2 creates them.
+this line. 
+
+Each line says ✔ or ✗. For each ✗ it will show you how to fix it.
+**Before you do the next step (2), the last three checks show ✗ (the Glue role's access to the course lake, the job script and
+the job `rides-month`), this is okay. We will create them in a second**.
 
 ```
 curl -fsSO https://raw.githubusercontent.com/cpsc436c-2026w1/b3-t2-glue-rides/main/check_t2.sh && bash check_t2.sh
 ```
+
+As a reminder, the Glue tutorial's setup script
+[`setup_glue.sh`](https://github.com/cpsc436c-2026w1/l7-spark-glue#1-set-up-your-account-once) created your bucket
+`436c-glue-<your account number>` and the Glue role `436c-glue-notebook`. The Athena tutorial's setup script
+[`setup_athena.sh`](https://github.com/cpsc436c-2026w1/b3-t1-athena-rides#1-set-up-your-account-once) set the Athena
+result location, the Data scanned limit and the `course` data source. Both work in Region **Canada (Central)**.
 
 ## 2. Set up the job (once)
 
