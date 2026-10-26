@@ -123,11 +123,14 @@ minutes. If it fails, the **Runs** page shows the error. While it runs, open
 <details>
 <summary>Check your predictions (open after the run)</summary>
 
-1. The call `.partitionedBy(F.days("pickup_datetime"))` partitions by pickup day, so March has one partition for
-   each of its 31 days.
-2. The call `repartition(32)` makes 32 Spark partitions, with one task for each. The table property
-   `write.distribution-mode = none` lets each task write its rows for every day it holds, so a day can get up to 32
-   files, one from each task. In Step 2 you count the files and divide by 31.
+1. The call `.partitionedBy(F.days("pickup_datetime"))` partitions the table by pickup day. Each day's rows go in
+   their own folder in S3, such as `pickup_datetime_day=2024-03-01/`. These are folder partitions, and March has 31
+   of them, one for each day.
+2. The script uses a second kind of partition. `repartition(32)` splits the month's rows into 32 Spark partitions,
+   chunks of rows that one Spark task each works on. The split is by row, not by day, so every task holds rows from
+   all 31 days. The table property `write.distribution-mode = none` lets each task write its rows as they are, one
+   file for each day it holds. So each day's folder gets one file from each of the 32 tasks: up to 32 files a day,
+   and up to 32 × 31 = 992 files for March. In Step 2 you count the files and divide by 31.
 3. The job appends the month again, so the row count doubles. The script does not check which months it has already
    loaded. This is Tutorial 1's load-twice problem in a Glue job.
 </details>
