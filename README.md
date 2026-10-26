@@ -34,6 +34,7 @@ As a reminder, the Glue tutorial's setup script
 `436c-glue-<your account number>` and the Glue role `436c-glue-notebook`. The Athena tutorial's setup script
 [`setup_athena.sh`](https://github.com/cpsc436c-2026w1/b3-t1-athena-rides#1-set-up-your-account-once) set the Athena
 result location, the Data scanned limit and the `course` data source. Both work in Region **Canada (Central)**.
+It is a good idea to review the setup scripts on your own to learn a bit about IAM and every service limitations and best practices.
 
 ## 2. Set up the job (once)
 
